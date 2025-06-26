@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="RemoteTargetsManager">
+    <targets>
+      <target name="root@192.168.35.130:22" type="ssh/sftp" uuid="d5cdb7c2-a0d5-4300-8282-cb9dad37638d">
+        <config>
+          <option name="projectRootOnTarget" value="/root/goproject/dockertest" />
+          <option name="serverName" value="root@192.168.35.130:22 password" />
+        </config>
+        <ContributedStateBase type="GoLanguageRuntime">
+          <config>
+            <option name="compiledExecutablesVolume">
+              <VolumeState>
+                <option name="remotePath" value="/root/gosh" />
+              </VolumeState>
+            </option>
+            <option name="goPath" value="/root/go" />
+            <option name="goRoot" value="/usr/local/go/bin/go" />
+            <option name="goVersion" value="go1.21.0 linux/amd64" />
+          </config>
+        </ContributedStateBase>
+        <ContributedStateBase type="GoLanguageRuntime">
+          <config />
+        </ContributedStateBase>
+      </target>
+    </targets>
+  </component>
+</project>
