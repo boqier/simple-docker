@@ -1,6 +1,7 @@
 package fs1
 
 import (
+	"dockertest1/cgroups/subsystem"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -16,7 +17,7 @@ type MemorySubsystem struct {
 }
 
 // 设置资源限制
-func (s *MemorySubsystem) Set(cgroupPath string, res *ResourceConfig) error {
+func (s *MemorySubsystem) Set(cgroupPath string, res *subsystem.ResourceConfig) error {
 	if subsysCgroupPath, err := GetCgroupPath(s.Name(), cgroupPath, true); err == nil {
 		if res.MemoryLimit != "" {
 			if err := os.WriteFile(filepath.Join(subsysCgroupPath, "memory.limit_in_bytes"), []byte(res.MemoryLimit), 0644); err != nil {

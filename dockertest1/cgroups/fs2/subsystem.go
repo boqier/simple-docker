@@ -1,4 +1,4 @@
-package fs1
+package fs2
 
 import (
 	"dockertest1/cgroups/subsystem"

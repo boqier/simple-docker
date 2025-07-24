@@ -1,9 +1,10 @@
 package main
 
 import (
-	"dockertest1/cgroups"
+	"dockertest1/cgroups/subsystem"
 	"dockertest1/container"
 	"fmt"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 )
@@ -17,7 +18,7 @@ var runCommand = &cli.Command{
 			Usage: "enable tty",
 		},
 		&cli.StringFlag{
-			Name:  "mem",
+			Name:  "m",
 			Usage: "memory limit,e.g: -men 100m",
 		},
 		&cli.StringFlag{
@@ -39,12 +40,12 @@ var runCommand = &cli.Command{
 		}
 		tty := context.Bool("it")
 
-		resConf := cgroups.ResourceConfig{
-			MemoryLimit: context.String("mem"),
+		resConf := subsystem.ResourceConfig{
+			MemoryLimit: context.String("m"),
 			CpuSet:      context.String("cpuset"),
 			CpuCfsQuota: context.Int("cpu"),
 		}
-		Run(tty, cmdArray, resConf)
+		Run(tty, cmdArray, &resConf)
 		return nil
 	},
 }

@@ -1,13 +1,16 @@
 package main
 
 import (
+	"dockertest1/cgroups"
+	"dockertest1/cgroups/subsystem"
 	"dockertest1/container"
-	log "github.com/sirupsen/logrus"
 	"os"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 )
 
-func Run(tty bool, comArray []string) {
+func Run(tty bool, comArray []string, res *subsystem.ResourceConfig) {
 	parent, writePipe := container.NewParentProcess(tty)
 	if parent == nil {
 		log.Errorf("New parent process error")
@@ -16,9 +19,12 @@ func Run(tty bool, comArray []string) {
 	if err := parent.Start(); err != nil {
 		log.Errorf("Start parent process error: %v", err)
 	}
+	cgroupmanager := cgroups.NewCgroupManager("my-docker")
+	defer cgroupmanager.Remove()
+	cgroupmanager.Set(res)
+	cgroupmanager.Apply(os.Getpid())
 	sendInitCommand(comArray, writePipe)
 	_ = parent.Wait()
-
 }
 
 func sendInitCommand(comArray []string, writePipe *os.File) {
