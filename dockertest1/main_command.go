@@ -29,6 +29,10 @@ var runCommand = &cli.Command{
 			Name:  "cpuset",
 			Usage: "cpuset limit,e.g: -setcpu 100",
 		},
+		&cli.StringFlag{
+			Name:  "v",
+			Usage: "volume mount, e.g: -v /host/path:/container/path",
+		},
 	},
 	Action: func(context *cli.Context) error {
 		if len(context.Args().Slice()) < 1 {
@@ -39,13 +43,13 @@ var runCommand = &cli.Command{
 			cmdArray = append(cmdArray, arg)
 		}
 		tty := context.Bool("it")
-
+		volume := context.String("v")
 		resConf := subsystem.ResourceConfig{
 			MemoryLimit: context.String("m"),
 			CpuSet:      context.String("cpuset"),
 			CpuCfsQuota: context.Int("cpu"),
 		}
-		Run(tty, cmdArray, &resConf)
+		Run(tty, cmdArray, &resConf, volume)
 		return nil
 	},
 }

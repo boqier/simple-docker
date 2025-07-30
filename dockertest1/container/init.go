@@ -3,7 +3,6 @@ package container
 import (
 	"fmt"
 	log "github.com/sirupsen/logrus"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
@@ -39,7 +38,7 @@ func RunContainerInitProcess(command string, args []string) error {
 }
 func readUserCommamd() []string {
 	prpe := os.NewFile(uintptr(fdIndex), "pipe")
-	msg, err := ioutil.ReadAll(prpe)
+	msg, err := os.ReadFile(prpe.Name())
 	if err != nil {
 		log.Errorf("init read pipe error %v", err)
 		return nil
@@ -47,7 +46,7 @@ func readUserCommamd() []string {
 	msgStr := string(msg)
 	return strings.Split(msgStr, " ")
 }
-func NewParentProcess(tty bool) (*exec.Cmd, *os.File) {
+func NewParentProcess(tty bool,volume string) (*exec.Cmd, *os.File) {
 	readPipe, writePipe, err := os.Pipe()
 	if err != nil {
 		log.Errorf("new pipe error %v", err)
@@ -62,5 +61,9 @@ func NewParentProcess(tty bool) (*exec.Cmd, *os.File) {
 	}
 	//将readpipe作为ExtraFiles，这样cmd执行时就会带着这个文件句柄创建子线程
 	cmd.ExtraFiles = []*os.File{readPipe}
+	mntURL := "/root/mnt/"
+	rootURL := "/root/"
+	NewWorkSpace(rootURL, mntURL,volume)
+	cmd.Dir = mntURL
 	return cmd, writePipe
 }

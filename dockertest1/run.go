@@ -10,8 +10,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func Run(tty bool, comArray []string, res *subsystem.ResourceConfig) {
-	parent, writePipe := container.NewParentProcess(tty)
+func Run(tty bool, comArray []string, res *subsystem.ResourceConfig, volume string) {
+	parent, writePipe := container.NewParentProcess(tty, volume)
 	if parent == nil {
 		log.Errorf("New parent process error")
 		return
@@ -25,6 +25,10 @@ func Run(tty bool, comArray []string, res *subsystem.ResourceConfig) {
 	cgroupmanager.Apply(os.Getpid())
 	sendInitCommand(comArray, writePipe)
 	_ = parent.Wait()
+	mntURL := "/root/mnt"
+	rootURL := "/root"
+	container.DeleteWorkSpace(mntURL, rootURL, volume)
+
 }
 
 func sendInitCommand(comArray []string, writePipe *os.File) {
