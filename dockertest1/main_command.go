@@ -34,16 +34,16 @@ var runCommand = &cli.Command{
 			Usage: "volume mount, e.g: -v /host/path:/container/path",
 		},
 		&cli.StringFlag{
-			Name: "d"
-			Usage: "detach container"
+			Name: "d",
+			Usage: "detach container",
 		},
 		&cli.BoolFlag{
 			Name:  "name",
-			Usage: "name of the container"
+			Usage: "name of the container",
 		},
 	},
 	Action: func(context *cli.Context) error {
-		if len(context.Args()) < 1 {
+		if len(context.Args().Slice()) < 1 {
 			return fmt.Errorf("need at least 1 argument")
 		}
 		var cmdArray []string
@@ -61,8 +61,8 @@ var runCommand = &cli.Command{
 			CpuSet:      context.String("cpuset"),
 			CpuCfsQuota: context.Int("cpu"),
 		}
-		containerName := context.String("name")
-		Run(Createtty, cmdArray, &resConf, volume,containerName)
+//		containerName := context.String("name")
+		Run(Createtty, cmdArray, &resConf, volume)
 		return nil
 	},
 }
@@ -79,14 +79,14 @@ var initCommand = &cli.Command{
 }
 var commitCommand = &cli.Command{
 	Name:  "commit",
-	usage: "commit a container into image",
+	Usage: "commit a container into image",
 	Action: func(context *cli.Context) error {
-	if len(context.Args())<1 {
-		return fmt.Errorf("need at least 1 argument")
-	}
-	imageName:= context.Args().Get(0)
-	log.Infof("commit image: %s", imageName)
-	commitContainer(imageName)
+		if len(context.Args().Slice()) < 1 {
+			return fmt.Errorf("need at least 1 argument")
+		}
+		imageName := context.Args().Get(0)
+		log.Infof("commit image: %s", imageName)
+		commitContainer(imageName)
 	return nil
 },
 }
