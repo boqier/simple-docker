@@ -1,14 +1,16 @@
 package container
 
 import (
+	fmt "fmt"
 	"os"
 	"os/exec"
+	"strings"
 	"syscall"
 
 	log "github.com/sirupsen/logrus"
 )
 
-func NewParentProcess(tty bool) (*exec.Cmd, *os.File) {
+func NewParentProcess(tty bool, volume string) (*exec.Cmd, *os.File) {
 	// 创建匿名管道用于传递参数，将readPipe作为子进程的ExtraFiles，子进程从readPipe中读取参数
 	// 父进程中则通过writePipe将参数写入管道
 	readPipe, writePipe, err := os.Pipe()
@@ -29,14 +31,22 @@ func NewParentProcess(tty bool) (*exec.Cmd, *os.File) {
 	//指定 cmd 的工作目录为我们前面准备好的用于存放 busybox rootfs的目录，暂时固定为 /root/busybox
 	mntURL := "/root/merged/"
 	rootURL := "/root/"
-	NewWorkSpace(rootURL, mntURL)
+	NewWorkSpace(rootURL, mntURL, volume)
 	cmd.Dir = mntURL
 	return cmd, writePipe
 }
-func NewWorkSpace(rootPath string, mntURL string) {
+func NewWorkSpace(rootPath string, mntURL string, volume string) {
 	createLower(rootPath)
 	createDirs(rootPath)
 	mountOverlayFS(rootPath, mntURL)
+	if volume != "" {
+		hostPath, containerPath, err := volumeExtract(volume)
+		if err != nil {
+			log.Errorf("volume extrac error %v", err)
+		}
+		mountVolume(mntURL, hostPath, containerPath)
+
+	}
 }
 func createLower(rootURL string) {
 	busyboxURL := rootURL + "busybox/"
@@ -89,7 +99,14 @@ func PathExists(path string) (bool, error) {
 	}
 	return false, err
 }
-func DeleteWorkSpace(rootURL string, mntURL string) {
+func DeleteWorkSpace(rootURL string, mntURL string, volume string) {
+	if volume != "" {
+		_, containerPath, err := volumeExtract(volume)
+		if err != nil {
+			log.Errorf("volume extrac error %v", err)
+		}
+		umountvolume(mntURL, containerPath)
+	}
 	umountOverlayFS(mntURL)
 	deleteDirs(rootURL)
 }
@@ -112,5 +129,42 @@ func deleteDirs(rootURL string) {
 	workURL := rootURL + "work"
 	if err := os.RemoveAll(workURL); err != nil {
 		log.Errorf("Remove dir %s error. Error: %v", workURL, err)
+	}
+}
+func volumeExtract(volume string) (sourcePath string, destinationPath string, err error) {
+	parts := strings.Split(volume, ":")
+	if len(parts) != 2 {
+		err = fmt.Errorf("volume format error")
+		return "", "", err
+	}
+	sourcePath, destinationPath = parts[0], parts[1]
+	if sourcePath == "" || destinationPath == "" {
+		err = fmt.Errorf("volume format error")
+		return "", "", err
+	}
+	return sourcePath, destinationPath, nil
+}
+func mountVolume(mntPath string, hostPath string, containerPath string) {
+	if err := os.Mkdir(hostPath, 0777); err != nil {
+		log.Error("Mkdir hostpath %s error. Error: %v", hostPath, err)
+	}
+	containerPathInHost := mntPath + containerPath
+	if err := os.Mkdir(containerPathInHost, 0777); err != nil {
+		log.Error("Mkdir containerPathInHost %s error. Error: %v", containerPathInHost, err)
+	}
+	cmd := exec.Command("mount", "-o", "bind", hostPath, containerPathInHost)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		log.Errorf("Mount volume error. Error: %v", err)
+	}
+}
+func umountvolume(mntPath string, containerPath string) {
+	containerPathInHost := mntPath + containerPath
+	cmd := exec.Command("umount", containerPathInHost)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		log.Errorf("Umount volume error. Error: %v", err)
 	}
 }
