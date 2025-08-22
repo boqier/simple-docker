@@ -99,3 +99,48 @@ var listCommand = &cli.Command{
 		return nil
 	},
 }
+var logCommand = &cli.Command{
+	Name:  "logs",
+	Usage: "Show logs of a container",
+	Action: func(context *cli.Context) error {
+		if len(context.Args().Slice()) < 1 {
+			return fmt.Errorf("need at least 1 argument")
+		}
+		containerName := context.Args().Get(0)
+		logContainer(containerName)
+		return nil
+	},
+}
+var stopCommand = &cli.Command{
+	Name:  "stop",
+	Usage: "Stop a running container",
+	Action: func(context *cli.Context) error {
+		if len(context.Args().Slice()) < 1 {
+			return fmt.Errorf("need at least 1 argument")
+		}
+		containerName := context.Args().Get(0)
+		stopContainer(containerName)
+		log.Infof("stop come on")
+		return nil
+	},
+}
+var removeCommand = &cli.Command{
+	Name:  "rm",
+	Usage: "Remove a container",
+	Flags: []cli.Flag{
+		&cli.BoolFlag{
+			Name:  "f",
+			Usage: "Force remove a running container",
+		},
+	},
+	Action: func(context *cli.Context) error {
+		if len(context.Args().Slice()) < 1 {
+			return fmt.Errorf("need at least 1 argument")
+		}
+		containerId := context.Args().Get(0)
+		force := context.Bool("f")
+		removeContainer(containerId, force)
+		log.Infof("remove come on")
+		return nil
+	},
+}

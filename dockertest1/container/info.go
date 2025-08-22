@@ -77,3 +77,7 @@ func DeleteContainerInfo(containerId string) {
 		log.Errorf("Remove dir %s error. Error: %v", dirPath, err)
 	}
 }
+func GetLogfile(containerId string) string {
+	return fmt.Sprintf(LogFile, containerId)
+}
+
