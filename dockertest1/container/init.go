@@ -2,6 +2,7 @@ package container
 
 import (
 	"io"
+	"math/rand"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -131,4 +132,23 @@ func pivotRoot(root string) error {
 	}
 	// 删除临时文件夹
 	return os.Remove(pivotDir)
+}
+
+// randStringByte 生成随机字符串
+// 用于生成容器名
+// n: 生成的字符串长度
+// 返回生成的字符串
+// 这里使用的是数字0-9
+// 你可以根据需要修改letterBytes来生成其他字符的随机字符串
+func GenerateContainerID() string {
+	return randStringBytes(IDLength)
+}
+
+func randStringBytes(n int) string {
+	letterBytes := "1234567890"
+	b := make([]byte, n)
+	for i := range b {
+		b[i] = letterBytes[rand.Intn(len(letterBytes))]
+	}
+	return string(b)
 }

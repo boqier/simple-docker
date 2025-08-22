@@ -33,6 +33,14 @@ var runCommand = &cli.Command{
 			Name:  "v",
 			Usage: "volume: -v /etc/conf:/mydocker/conf",
 		},
+		&cli.BoolFlag{
+			Name:  "d",
+			Usage: "detach container",
+		},
+		&cli.StringFlag{
+			Name:  "name",
+			Usage: "container name",
+		},
 	},
 	Action: func(context *cli.Context) error {
 		if len(context.Args().Slice()) < 1 {
@@ -43,13 +51,18 @@ var runCommand = &cli.Command{
 			cmdArray = append(cmdArray, arg)
 		}
 		tty := context.Bool("it")
+		deatch := context.Bool("d")
+		if tty && deatch {
+			return fmt.Errorf("it and d paramter can not both provided")
+		}
 		volume := context.String("v")
+		containerName := context.String("name")
 		resConf := subsystem.ResourceConfig{
 			MemoryLimit: context.String("m"),
 			CpuSet:      context.String("cpuset"),
 			CpuCfsQuota: context.Int("cpu"),
 		}
-		Run(tty, cmdArray, &resConf, volume)
+		Run(tty, cmdArray, &resConf, volume, containerName)
 		return nil
 	},
 }
@@ -74,6 +87,15 @@ var commitCommand = &cli.Command{
 		imageName := context.Args().Get(0)
 		commitContainer(imageName)
 		log.Infof("commit come on")
+		return nil
+	},
+}
+
+var listCommand = &cli.Command{
+	Name:  "ps",
+	Usage: "List all the containers",
+	Action: func(context *cli.Context) error {
+		ListContainers()
 		return nil
 	},
 }
