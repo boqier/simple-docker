@@ -24,6 +24,7 @@ func main() {
 		logCommand,
 		stopCommand,
 		removeCommand,
+		execCommand,
 	}
 	app.Before = func(context *cli.Context) error {
 		log.SetFormatter(&log.JSONFormatter{})
