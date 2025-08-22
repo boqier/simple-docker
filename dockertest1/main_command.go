@@ -64,3 +64,16 @@ var initCommand = &cli.Command{
 		return err
 	},
 }
+var commitCommand = &cli.Command{
+	Name:  "commit",
+	Usage: "Commit a container to an image",
+	Action: func(context *cli.Context) error {
+		if len(context.Args().Slice()) < 1 {
+			return fmt.Errorf("need at least 1 argument")
+		}
+		imageName := context.Args().Get(0)
+		commitContainer(imageName)
+		log.Infof("commit come on")
+		return nil
+	},
+}
