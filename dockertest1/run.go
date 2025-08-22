@@ -25,6 +25,7 @@ func Run(tty bool, comArray []string, res *subsystem.ResourceConfig) {
 	cgroupmanager.Apply(os.Getpid())
 	sendInitCommand(comArray, writePipe)
 	_ = parent.Wait()
+	container.DeleteWorkSpace("/root/", "/root/merged/")
 }
 
 func sendInitCommand(comArray []string, writePipe *os.File) {
@@ -32,4 +33,5 @@ func sendInitCommand(comArray []string, writePipe *os.File) {
 	log.Infof("command all is: %s", command)
 	_, _ = writePipe.WriteString(command)
 	_ = writePipe.Close()
+
 }
