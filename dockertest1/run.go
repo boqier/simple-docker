@@ -10,9 +10,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func Run(tty bool, comArray []string, res *subsystem.ResourceConfig, volume string, containerName string) {
+func Run(tty bool, comArray []string, res *subsystem.ResourceConfig, volume string, containerName string, imageName string) {
 	containerId := container.GenerateContainerID()
-	parent, writePipe := container.NewParentProcess(tty, volume, containerId)
+	parent, writePipe := container.NewParentProcess(tty, volume, containerId, imageName)
 	if parent == nil {
 		log.Errorf("New parent process error")
 		return
@@ -20,19 +20,19 @@ func Run(tty bool, comArray []string, res *subsystem.ResourceConfig, volume stri
 	if err := parent.Start(); err != nil {
 		log.Errorf("Start parent process error: %v", err)
 	}
-	err := container.RecordContainerInfo(parent.Process.Pid, comArray, containerName, containerId)
+	err := container.RecordContainerInfo(parent.Process.Pid, comArray, containerName, containerId, volume)
 	if err != nil {
 		log.Errorf("Record container info error %v", err)
 		return
 	}
 	cgroupmanager := cgroups.NewCgroupManager("my-docker")
-	defer cgroupmanager.Remove()
+
 	cgroupmanager.Set(res)
 	cgroupmanager.Apply(os.Getpid())
 	sendInitCommand(comArray, writePipe)
 	if tty {
 		_ = parent.Wait()
-		container.DeleteWorkSpace("/root/", "/root/merged/", volume)
+		container.DeleteWorkSpace(containerId, volume)
 		container.DeleteContainerInfo(containerId)
 	}
 }

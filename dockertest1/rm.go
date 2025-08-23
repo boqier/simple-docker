@@ -21,7 +21,7 @@ func removeContainer(containerID string, force bool) {
 			log.Errorf("Remove container dir %s error %v", dirPath, err)
 			return
 		}
-		log.Infof("Container %s removed successfully", containerID)
+		container.DeleteWorkSpace(containerID, containerInfo.Volume)
 	case container.RUNNING:
 		if !force {
 			log.Errorf("Container %s is still running, use --force to remove it", containerID)

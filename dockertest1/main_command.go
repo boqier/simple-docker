@@ -5,6 +5,7 @@ import (
 	"dockertest1/container"
 	"fmt"
 	"os"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 )
@@ -50,6 +51,8 @@ var runCommand = &cli.Command{
 		for _, arg := range context.Args().Slice() {
 			cmdArray = append(cmdArray, arg)
 		}
+		imageName := cmdArray[0]
+		cmdArray = cmdArray[1:]
 		tty := context.Bool("it")
 		deatch := context.Bool("d")
 		if tty && deatch {
@@ -62,7 +65,9 @@ var runCommand = &cli.Command{
 			CpuSet:      context.String("cpuset"),
 			CpuCfsQuota: context.Int("cpu"),
 		}
-		Run(tty, cmdArray, &resConf, volume, containerName)
+		
+
+		Run(tty, cmdArray, &resConf, volume, containerName,imageName)
 		return nil
 	},
 }
@@ -81,13 +86,12 @@ var commitCommand = &cli.Command{
 	Name:  "commit",
 	Usage: "Commit a container to an image",
 	Action: func(context *cli.Context) error {
-		if len(context.Args().Slice()) < 1 {
-			return fmt.Errorf("need at least 1 argument")
+		if len(context.Args().Slice()) < 2 {
+			return fmt.Errorf("miss ing container name or image name")
 		}
-		imageName := context.Args().Get(0)
-		commitContainer(imageName)
-		log.Infof("commit come on")
-		return nil
+		containerId:= context.Args().Get(0)
+		imageName:= context.Args().Get(1)
+		return commitContainer(containerId,imageName)
 	},
 }
 
